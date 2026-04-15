@@ -1,7 +1,7 @@
 'use client';
 
 import Image from "next/image";
-import Link from "next/link"; // Importación correcta para navegación
+import Link from "next/link";
 import { FaWhatsapp, FaFacebookF, FaInstagram } from "react-icons/fa";
 import { AiOutlineShoppingCart } from "react-icons/ai";
 import { useState, useEffect } from "react";
@@ -16,6 +16,7 @@ import { Autoplay, Pagination } from "swiper/modules";
 export default function Home() {
   const [cantidadCarrito, setCantidadCarrito] = useState(0);
   const [usuarioLogueado, setUsuarioLogueado] = useState(false);
+  const [mounted, setMounted] = useState(false); // Para evitar errores de hidratación
   const router = useRouter();
 
   const marcas = [
@@ -32,12 +33,11 @@ export default function Home() {
   ];
 
   useEffect(() => {
-    // Importar flowbite solo en el cliente para evitar errores de compilación
-    import("flowbite");
-
+    setMounted(true);
+    
     // Sincronizar carrito
     const carrito = JSON.parse(localStorage.getItem("carrito") || "[]");
-    setCantidadCarrito(carrito.reduce((acc, p) => acc + (p.cantidad || 1), 0));
+    setCantidadCarrito(carrito.reduce((acc: number, p: any) => acc + (p.cantidad || 1), 0));
     
     // Verificar sesión de usuario
     const usuario = localStorage.getItem("usuario");
@@ -46,18 +46,17 @@ export default function Home() {
     }
   }, []);
 
-  // Función para manejar rutas protegidas
-  const manejarNavegacion = (e, ruta, esProtegida) => {
-    if (esProtegida) {
-      e.preventDefault();
-      if (!usuarioLogueado) {
-        alert("Por seguridad, inicia sesión para acceder a esta sección.");
-        router.push("/login");
-      } else {
-        router.push(ruta);
-      }
+  // Función corregida con tipos de TypeScript
+  const manejarNavegacion = (e: React.MouseEvent, ruta: string, esProtegida: boolean) => {
+    if (esProtegida && !usuarioLogueado) {
+      e.preventDefault(); // Detenemos el Link solo si es necesario
+      alert("Por seguridad, inicia sesión para acceder a esta sección.");
+      router.push("/login");
     }
   };
+
+  // Si no se ha montado el cliente, retornamos un esqueleto simple para evitar errores de Swiper
+  if (!mounted) return <div className="min-h-screen bg-white" />;
 
   return (
     <main className="min-h-screen bg-white">
@@ -69,7 +68,7 @@ export default function Home() {
           <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-start">
             <Image src="/logovector.png" alt="Logo" width={140} height={100} className="w-28 md:w-36" />
             <div className="border-l pl-4 border-gray-200">
-              <a href="https://wa.me/50487954789" target="_blank" className="flex items-center gap-2 font-bold text-xs md:text-sm hover:text-red-600 transition">
+              <a href="https://wa.me/50487954789" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 font-bold text-xs md:text-sm hover:text-red-600 transition">
                 <FaWhatsapp className="text-green-500 text-lg" /> 8795-4789
               </a>
             </div>
@@ -119,7 +118,6 @@ export default function Home() {
       {/* ------------------ Hero Section ------------------ */}
       <div className="max-w-[1440px] mx-auto px-6 mt-8 md:mt-12 mb-16">
         <div className="flex flex-col lg:flex-row items-center lg:items-stretch gap-10">
-          {/* Carrusel Imágenes (Aumentado a 450px de ancho) */}
           <div className="w-full max-w-[480px] lg:w-[420px]">
             <div className="rounded-2xl overflow-hidden shadow-2xl h-[350px] md:h-[450px]">
               <Swiper spaceBetween={0} slidesPerView={1} loop autoplay={{ delay: 3000 }} modules={[Autoplay]} className="h-full">
@@ -178,15 +176,13 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ------------------ Footer (Horarios y Más) ------------------ */}
+      {/* ------------------ Footer ------------------ */}
       <footer className="w-full py-16 bg-white border-t border-gray-100 px-6 md:px-12">
         <div className="max-w-[1440px] mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-12 text-black">
-          
           <div className="lg:col-span-1">
             <Image src="/logovector.png" alt="Logo Unilen" width={130} height={60} />
             <p className="mt-4 text-sm text-gray-500">Comprometidos con tu claridad.</p>
           </div>
-
           <div>
             <h4 className="font-bold mb-4 uppercase text-xs tracking-widest">Síguenos</h4>
             <div className="flex flex-col gap-3">
@@ -194,7 +190,6 @@ export default function Home() {
                <a href="#" className="flex items-center gap-2 text-sm text-gray-600 hover:text-pink-600"><FaInstagram /> Instagram</a>
             </div>
           </div>
-
           <div>
             <h4 className="font-bold mb-4 uppercase text-xs tracking-widest">Legal</h4>
             <div className="flex flex-col gap-3 text-sm text-gray-600">
@@ -202,7 +197,6 @@ export default function Home() {
               <Link href="/politica-privacidad">Privacidad</Link>
             </div>
           </div>
-
           <div>
             <h4 className="font-bold mb-4 uppercase text-xs tracking-widest">Cuenta</h4>
             <div className="flex flex-col gap-3 text-sm text-gray-600">
@@ -210,7 +204,6 @@ export default function Home() {
               <Link href="/registro">Registrarme</Link>
             </div>
           </div>
-
           <div>
             <h4 className="font-bold mb-4 uppercase text-xs tracking-widest">Info</h4>
             <div className="flex flex-col gap-3 text-sm text-gray-600">
@@ -218,7 +211,6 @@ export default function Home() {
               <Link href="/innovacion-y-respuestas">Centro de Conocimiento</Link>
             </div>
           </div>
-
         </div>
       </footer>
 
