@@ -10,29 +10,20 @@ permissions:
   pages: write
   id-token: write
 
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
-
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "24" # Actualizado a Node 24
-          cache: 'npm'
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
+          node-version: "24"
       - name: Install dependencies
-        run: npm ci || npm install
+        run: npm install --legacy-peer-deps
       - name: Build with Next.js
-        run: npx --no-install next build
+        run: npx next build
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
