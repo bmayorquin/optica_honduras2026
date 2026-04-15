@@ -16,7 +16,7 @@ import { Autoplay, Pagination } from "swiper/modules";
 export default function Home() {
   const [cantidadCarrito, setCantidadCarrito] = useState(0);
   const [usuarioLogueado, setUsuarioLogueado] = useState(false);
-  const [mounted, setMounted] = useState(false); // Para evitar errores de hidratación
+  const [isMounted, setIsMounted] = useState(false); // Para asegurar renderizado en cliente
   const router = useRouter();
 
   const marcas = [
@@ -33,11 +33,14 @@ export default function Home() {
   ];
 
   useEffect(() => {
-    setMounted(true);
+    setIsMounted(true);
     
     // Sincronizar carrito
-    const carrito = JSON.parse(localStorage.getItem("carrito") || "[]");
-    setCantidadCarrito(carrito.reduce((acc: number, p: any) => acc + (p.cantidad || 1), 0));
+    const carritoStr = localStorage.getItem("carrito");
+    if (carritoStr) {
+      const carrito = JSON.parse(carritoStr);
+      setCantidadCarrito(carrito.reduce((acc: number, p: any) => acc + (p.cantidad || 1), 0));
+    }
     
     // Verificar sesión de usuario
     const usuario = localStorage.getItem("usuario");
@@ -46,17 +49,17 @@ export default function Home() {
     }
   }, []);
 
-  // Función corregida con tipos de TypeScript
+  // Función corregida para TypeScript
   const manejarNavegacion = (e: React.MouseEvent, ruta: string, esProtegida: boolean) => {
     if (esProtegida && !usuarioLogueado) {
-      e.preventDefault(); // Detenemos el Link solo si es necesario
+      e.preventDefault(); // Detenemos la navegación automática del Link
       alert("Por seguridad, inicia sesión para acceder a esta sección.");
       router.push("/login");
     }
   };
 
-  // Si no se ha montado el cliente, retornamos un esqueleto simple para evitar errores de Swiper
-  if (!mounted) return <div className="min-h-screen bg-white" />;
+  // Evitamos errores de hidratación (Swiper necesita que el cliente esté listo)
+  if (!isMounted) return null;
 
   return (
     <main className="min-h-screen bg-white">
@@ -66,7 +69,7 @@ export default function Home() {
         <div className="max-w-[1440px] mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           
           <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-start">
-            <Image src="/logovector.png" alt="Logo" width={140} height={100} className="w-28 md:w-36" />
+            <Image src="/logovector.png" alt="Logo" width={140} height={100} className="w-28 md:w-36" priority />
             <div className="border-l pl-4 border-gray-200">
               <a href="https://wa.me/50487954789" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 font-bold text-xs md:text-sm hover:text-red-600 transition">
                 <FaWhatsapp className="text-green-500 text-lg" /> 8795-4789
