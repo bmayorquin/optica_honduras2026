@@ -10,25 +10,35 @@ permissions:
   pages: write
   id-token: write
 
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true # Esto quita los avisos de Node 20
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: "24"
           cache: 'npm'
+
       - name: Install dependencies
         run: npm install --legacy-peer-deps
+
       - name: Build with Next.js
         run: npx next build
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./out # Next.js genera esta carpeta con 'output: export'
+          path: ./out
 
   deploy:
     environment:
